@@ -19,7 +19,7 @@ echo "downloading hosts"
 for((i=0;i<${#url_list[*]};++i))
 do
   url="${url_list[i]}"
-  wget -c -nc "$url" -O /tmp/"$i"
+  wget -c "$url" -O /tmp/"$i"
 done
 
 # edit hosts file

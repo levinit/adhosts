@@ -16,7 +16,11 @@ hosts文件均来自互联网。
 
   更新hosts：执行`adhosts`  命令即可（更新hosts将会向/etc/hosts文件写入内容，故而**需要root或sudo权限**的用户执行。）
 
-  删除adhosts：`sudo rm /usr/local/bin/adhosts `
+  删除adhosts：`sudo rm /usr/bin/adhosts `
+
+  ​
+
+  - archlinux可从aur下载，如使用yaourt：`yaourt -S adhosts`
 
 # Hosts来源
 

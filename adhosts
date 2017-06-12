@@ -1,7 +1,7 @@
 #!/bin/bash
 # copy the adhost to /usr/bin at the first time,add a adhosts alias to ~/.bashrc,then remove this commands.
-sudo -S cp adhosts /usr/local/bin/
-sudo -S sed -i '/adhost/d' /usr/local/bin/adhosts
+sudo -S cp adhosts /usr/bin/
+sudo -S sed -i '/adhost/d' /usr/bin/adhosts
 
 # hosts src
 url_list=(

@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/bin/sh
 # copy the adhost to /usr/bin at the first time,add a adhosts alias to ~/.bashrc,then remove this commands.
-sudo -S cp adhosts /usr/bin/
+echo "move adhosts to /usr/bin"
+sudo -S cp ./adhosts /usr/bin/
 sudo -S sed -i '/adhost/d' /usr/bin/adhosts
 
 # hosts src
@@ -14,12 +15,13 @@ url_list=(
 )
 
 # downloading hosts……
-echo "downloading hosts"
+echo "downloading hosts to /tmp"
 
 for((i=0;i<${#url_list[*]};++i))
 do
   url="${url_list[i]}"
-  wget -c "$url" -O /tmp/"$i"
+  echo "download hosts from" $url
+  curl -#C - -o /tmp/"$i" "$url"
 done
 
 # edit hosts file
@@ -28,8 +30,9 @@ sudo -S sed -i '/localhost/d' /tmp/1 /tmp/2 /tmp/5
 sudo -S sed -i '/ip6-localhost/d' /tmp/2
 
 echo "merge hosts"
-
 sudo -S cat /tmp/0 /tmp/1 /tmp/2 /tmp/3 /tmp/4 /tmp/5 >> /tmp/hosts
+
+echo "copy hosts to /etc/hosts"
 sudo -S cp /tmp/0 /etc/hosts
 
 echo "OK!"

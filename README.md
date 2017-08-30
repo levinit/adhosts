@@ -7,18 +7,20 @@ Adhosts is a script for updating advertisements-blocking and fanqiang(😂) host
 
 # 使用 Usage
 
-下载adhosts，并解压缩得到adhosts-master文件夹。
-- 首次运行：进入adhosts-master，执行`./adhosts` ，adhosts将会被放置到/usr/bin/下，并执行hosts更新。
+下载**adhosts**，并解压缩得到**adhosts-master**文件夹。
+- 首次运行：进入**adhosts-master**，执行`./adhosts` ，adhosts将会被安装到`/usr/bin/`下，并执行首次hosts更新。
 - 更新hosts：首次执行执行后，如需更新只需执行`adhosts`  命令即可。
 - 删除adhosts：`sudo rm /usr/bin/adhosts`
 
 archlinux用户可从[aur](https://aur.archlinux.org/packages/adhosts/)下载，如使用yaourt：`yaourt -S adhosts`。
 
 注意：
-- 在支持运行shell脚本的系统上运行，如各种Unix、Uinx衍生的各种BSD，BSD衍生的MacOS、各种linux发行版。windows用户可在后文的链接中自行复制hosts内容到`windows\system32\drivers\etc\hosts`。
+- 在支持运行shell脚本的系统上运行，如各种Unix、Uinx衍生的各种BSD，BSD衍生的MacOS、各种linux发行版。windows用户可在[后文的链接](#Hosts来源 Sources)中自行复制hosts内容到`windows\system32\drivers\etc\hosts`。
 - 更新hosts将会向/etc/hosts文件写入内容，故而**需要root或sudo权限**的用户执行。
 
-Downlod adhosts,extracting it.
+---
+
+Downlod **adhosts** , extracting it , `cd adhost-master`:
 - install adhosts: `./adhosts`
 - update hosts:  `adhosts` 
 - delete adhosts: `sudo rm /usr/bin/adhosts`
@@ -30,7 +32,7 @@ Notice:updating hosts need "sudo" or root permission.
 # Hosts来源 Sources
 
 - 科学上网 cross gfw
-  - [racaljk/hosts](https://github.com/racaljk/hosts)
+  - [googlehosts/hosts](https://github.com/googlehosts/hosts)
 - 广告屏蔽 ad block
   - [AdAway/AdAway](https://github.com/AdAway/AdAway)
   - [vokins/yhosts](https://github.com/vokins/yhosts/)

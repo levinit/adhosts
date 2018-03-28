@@ -8,9 +8,6 @@ url_list=(
   "https://raw.githubusercontent.com/googlehosts/hosts/master/hosts-files/hosts"
   "https://adaway.org/hosts.txt"
   "https://raw.githubusercontent.com/vokins/yhosts/master/hosts"
-  "https://raw.githubusercontent.com/sy618/hosts/master/p"
-  "https://raw.githubusercontent.com/sy618/hosts/master/y"
-  "https://raw.githubusercontent.com/neoFelhz/neohosts/master/nadhost"
 )
 
 # downloading hosts
@@ -23,11 +20,11 @@ done
 
 echo -e "\e[1;31m Updating hosts need permission to write /etc/hosts. 更新hosts需要有向/etc/hosts写入的权限 \e[0m"
 # remove same content
-sudo -S sed -i '/localhost/d' /tmp/1 /tmp/2 /tmp/5
+sudo -S sed -i '/localhost/d' /tmp/1 /tmp/2
 sudo -S sed -i '/ip6-localhost/d' /tmp/2
 
 # merge hosts
-sudo -S cat /tmp/0 /tmp/1 /tmp/2 /tmp/3 /tmp/4 /tmp/5 >> /tmp/hosts
+sudo -S cat /tmp/0 /tmp/1 /tmp/2 >> /tmp/hosts
 
 # copy /tmp/hosts to /etc/hosts
 sudo -S cp /tmp/0 /etc/hosts

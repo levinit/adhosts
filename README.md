@@ -15,7 +15,7 @@ Adhosts is a script for updating advertisements-blocking and fanqiang(😂) host
 archlinux用户可从[aur](https://aur.archlinux.org/packages/adhosts/)下载，如使用yaourt：`yaourt -S adhosts`。
 
 注意：
-- 在支持运行shell脚本的系统上运行，如各种Unix、Uinx衍生的各种BSD，BSD衍生的MacOS、各种linux发行版。windows用户可在[后文的链接](#Hosts来源 Sources)中自行复制hosts内容到`windows\system32\drivers\etc\hosts`。
+- 在支持运行shell脚本的系统上运行，如各种Unix、Uinx衍生的各种BSD，BSD衍生的MacOS、各种linux发行版。
 - 更新hosts将会向/etc/hosts文件写入内容，故而**需要root或sudo权限**的用户执行。
 
 ---
@@ -36,5 +36,5 @@ Notice:updating hosts need "sudo" or root permission.
 - 广告屏蔽 ad block
   - [AdAway/AdAway](https://github.com/AdAway/AdAway)
   - [vokins/yhosts](https://github.com/vokins/yhosts/)
-  - [sy618/hosts](https://github.com/sy618/hosts)
+  - ~~[sy618/hosts](https://github.com/sy618/hosts)~~
   - [neoFelhz/neohosts](https://github.com/neoFelhz/neohosts)

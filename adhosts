@@ -1,14 +1,16 @@
 #!/bin/sh
-# copy the adhost to /usr/local/bin at the first time
-echo -e "\e[1m Install adhosts , and update hosts.安装adhosts并更新hosts。\e[0m"
-sudo  install -c ./adhosts /usr/local/bin/adhosts
-sudo  sed -i '/adhost/d' /usr/local/bin/adhosts
+# copy the script file to /usr/local/bin at the first time
+if [[ ! $(which adhosts) ]]; then
+  echo -e "\e[1m Install adhosts , and update hosts.安装adhosts并更新hosts。\e[0m"
+  sudo install -c $0 /usr/local/bin/adhosts
+fi
+
 # hosts src
 url_list=(
   "https://raw.githubusercontent.com/googlehosts/hosts/master/hosts-files/hosts"
   "https://adaway.org/hosts.txt"
   "https://raw.githubusercontent.com/vokins/yhosts/master/hosts"
-  "https://raw.githubusercontent.com/neoFelhz/neohosts/data/nadhost"
+  "https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/full/hosts"
 )
 
 # downloading hosts
@@ -18,14 +20,21 @@ for url in ${url_list[*]}; do
   curl --silent $url | tee -a $hosts_file
 done
 
-# remove same content
+# modify some content
 sed -i -e '/localhost/d' \
   -e '/ip6-localhost/d' \
   -e '1i 127.0.0.1 localhost\n::1 localhost' \
   $hosts_file
 
-# copy /tmp/hosts to /etc/hosts
-sudo cp $hosts_file /etc/hosts
+# # backup hosts file optional
+# unalias cp
+
+# echo "=====backup /etc/hosts[y/n] ? 是否备份/etc/hosts文件？[y/n]=====defautl is n"
+# read backup
+# [[ x"$backup" == x'y' ]] && cp -av /etc/hosts ~/hosts.bak.$(date +%Y%m%d%H%M%S)
+
+# # copy /tmp/hosts to /etc/hosts
+# [[ -s $hosts_file ]] && sudo cp -av $hosts_file /etc/hosts
 
 echo -e "OK!Some ads will be blocked!更新成功！你可以科学上网。可能需要使用https访问，例如\e[1;35m https://www.google.com/ \e[0m访问Google。"
 echo -e "Next time , execute this command \e[1madhosts\e[0m for updating.下次执行adhosts这条命令进行更新。"

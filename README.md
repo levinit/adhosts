@@ -7,27 +7,23 @@ Adhosts is a script for updating advertisements-blocking and fanqiang(😂) host
 
 # 使用 Usage
 
-下载**adhosts**，并解压缩得到**adhosts-master**文件夹。
-- 首次运行：进入**adhosts-master**，执行`./adhosts` ，adhosts将会被安装到`/usr/bin/`下，并执行首次hosts更新。
-- 更新hosts：首次执行执行后，如需更新只需执行`adhosts`  命令即可。
-- 删除adhosts：`sudo rm /usr/bin/adhosts`
+- 安装Installation：
 
-archlinux用户可从[aur](https://aur.archlinux.org/packages/adhosts/)下载，如使用yaourt：`yaourt -S adhosts`。
+  执行以下命令Excute command below：
 
-注意：
-- 在支持运行shell脚本的系统上运行，如各种Unix、Uinx衍生的各种BSD，BSD衍生的MacOS、各种linux发行版。
-- 更新hosts将会向/etc/hosts文件写入内容，故而**需要root或sudo权限**的用户执行。
+  ```shell
+  curl -s https://raw.githubusercontent.com/levinit/adhosts/master/adhosts |bash
+  ```
 
----
+  或者下载**adhosts**，并解压缩， `cd adhost-master`，然后执行  `bash adhosts`.
 
-Downlod **adhosts** , extracting it , `cd adhost-master`:
-- install adhosts: `./adhosts`
-- update hosts:  `adhosts` 
-- delete adhosts: `sudo rm /usr/bin/adhosts`
+  or Downlod **adhosts** ,  extracting it ,  `cd adhost-master`, and  `bash adhosts`.
 
-archlinux user:`yaourt -S adhosts`. See [adhosts-aur](https://aur.archlinux.org/packages/adhosts/).
+- 更新Update hosts：`adhosts` 
 
-Notice:updating hosts need "sudo" or root permission.
+- 删除Dlelete adhosts：`sudo rm /usr/local/bin/adhosts`
+
+archlinux [aur](https://aur.archlinux.org/packages/adhosts/)：`yay -S adhosts`。
 
 # Hosts来源 Sources
 

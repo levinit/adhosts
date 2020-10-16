@@ -12,7 +12,7 @@ Adhosts is a script for updating advertisements-blocking and fanqiang(😂) host
   执行以下命令Excute command below：
 
   ```shell
-  curl -s https://raw.githubusercontent.com/levinit/adhosts/master/adhosts |bash
+  curl -s https://raw.githubusercontent.com/levinit/adhosts/master/adhosts >> /tmp/adhosts.sh && sudo bash /tmp/adhosts.sh 
   ```
 
   或者下载**adhosts**，并解压缩， `cd adhost-master`，然后执行  `bash adhosts`.

@@ -1,48 +1,82 @@
 #!/bin/sh
+set -eu
+
 if [[ $USER != root ]]; then
   echo "need root or sudo."
   exit 0
 fi
 
-[[ $(which sudo 2>/dev/null) ]] || alias sudo=''
+hosts_file=/etc/hosts
+target_path=/usr/bin/adhosts
+timeout_secs=99
 
-# copy the script file to /usr/local/bin at the first time
-if [[ ! $(which adhosts) ]]; then
-  echo -e "\e[1m Install adhosts , and update hosts.安装adhosts并更新hosts。\e[0m"
-  sudo install -c $0 /usr/local/bin/adhosts
-fi
-
-# hosts src
-url_list=(
-  "https://raw.githubusercontent.com/googlehosts/hosts/master/hosts-files/hosts"
+# hosts files
+hosts_urls=(
   "https://adaway.org/hosts.txt"
-  "https://raw.githubusercontent.com/vokins/yhosts/master/hosts"
-  "https://cdn.jsdelivr.net/gh/neoFelhz/neohosts@gh-pages/full/hosts"
+  "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
 )
 
-# downloading hosts
-hosts_file=$(mktemp)
-for url in ${url_list[*]}; do
-  echo "-----"
-  echo "Download hosts from " $url "..."
-  curl -s $url >>$hosts_file
+#domain files
+domains_urls=(
+  "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt"
+)
+
+#=====
+function download_files() {
+  local file_url=$1
+  local file_save_path=$2
+  echo "------------------------"
+  echo "Download hosts from $file_url, and save to $2..."
+  set +eu
+  timeout $timeout_secs curl $file_url >>$file_save_path
+  set +eu
+}
+
+#=====
+adhosts_start_tag='#...adhosts_start_tag...'
+adhosts_end_tag='#...adhosts_end_tag...'
+tmp_hosts_file=$(mktemp)
+
+echo "++++++++start adhosts $(date) ++++++++"
+#---get hosts files content
+for hosts_url in ${hosts_urls[@]}; do
+  download_files $hosts_url $tmp_hosts_file
 done
 
-# modify some content
-adhosts_start_tag='#adhosts_start_tag...All-lines-above-are-original-info.'
-adhosts_end_tag='#adhosts_end_tag...'
+#---get domains files content and modify
+for domains_url in ${domains_urls[@]}; do
+  tmp_file=$(mktemp)
+  download_files $domains_url $tmp_file
+  if [[ -s $tmp_file ]]; then
+    sed -i -E "/^[^#]/ s/^/127.0.0.1 /" $tmp_file
+    cat $tmp_file >>$tmp_hosts_file
+  fi
+done
 
-sudo sed -i -e "1 i $adhosts_start_tag" \
+#delete old hosts lines
+if [[ ! -s $tmp_hosts_file ]]; then
+  echo "the new hosts file is empty, skip update. Exit!"
+  exit 0
+fi
+
+#add tags
+sed -i -E \
+  -e "1 i $adhosts_start_tag" \
   -e "$ a $adhosts_end_tag" \
-  -e "/localhost/d" \
-  -e "/ip6-localhost/d" \
+  $tmp_hosts_file
+
+#remove old adhosts lines from $hosts_file
+sed -i -E \
+  -e "/$adhosts_start_tag/,/$adhosts_end_tag/d" \
   $hosts_file
 
-# delete old adhosts info
-sudo sed -i "/$adhosts_start_tag/,/$adhosts_end_tag/ d" /etc/hosts
+#append new hosts lines to $hosts_file
+cat $tmp_hosts_file >>$hosts_file
 
-# # copy /tmp/hosts to /etc/hosts
-[[ -s $hosts_file ]] && sudo cat $hosts_file >>/etc/hosts
+# copy the script file to /usr/local/bin at the first time
 
-echo -e "OK!Some ads will be blocked!更新成功！你可以科学上网。可能需要使用https访问，例如\e[1;35m https://www.google.com/ \e[0m访问Google。"
+echo -e "\e[1m Install adhosts , and update hosts.安装adhosts并更新hosts。\e[0m"
+install -m 755 -c $0 $target_path
+
+echo -e "OK!Some ads will be blocked!更新成功！部分广告将被屏蔽！"
 echo -e "Next time , execute this command \e[1madhosts\e[0m for updating.下次执行adhosts这条命令进行更新。"

@@ -1,82 +1,111 @@
-#!/bin/sh
-set -eu
+#!/usr/bin/env bash
+# adhosts – 合并广告屏蔽 hosts 文件并更新系统 hosts
+# version: 1.0.1
 
-if [[ $USER != root ]]; then
-  echo "need root or sudo."
-  exit 0
+set -euo pipefail
+IFS=$'\n\t'
+
+VERSION="1.0.1"
+DRY_RUN=false
+
+# 检查系统语言
+LANGUAGE=$(locale | grep -iE '^LANG=' | cut -d= -f2)
+IS_ZH=false
+if [[ "$LANGUAGE" == zh* ]]; then
+  IS_ZH=true
 fi
 
-hosts_file=/etc/hosts
-target_path=/usr/bin/adhosts
-timeout_secs=99
-
-# hosts files
-hosts_urls=(
-  "https://adaway.org/hosts.txt"
-  "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
-)
-
-#domain files
-domains_urls=(
-  "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt"
-)
-
-#=====
-function download_files() {
-  local file_url=$1
-  local file_save_path=$2
-  echo "------------------------"
-  echo "Download hosts from $file_url, and save to $2..."
-  set +eu
-  timeout $timeout_secs curl $file_url >>$file_save_path
-  set +eu
+say() {
+  if $IS_ZH; then
+    echo -e "[adhosts] $1" >&2
+  else
+    echo -e "[adhosts] $2" >&2
+  fi
 }
 
-#=====
-adhosts_start_tag='#...adhosts_start_tag...'
-adhosts_end_tag='#...adhosts_end_tag...'
-tmp_hosts_file=$(mktemp)
+# --help 输出
+if [[ "${1-}" == "--help" ]]; then
+  if $IS_ZH; then
+    cat <<EOF
+adhosts - 自动合并广告屏蔽 hosts 并更新系统 hosts 文件
 
-echo "++++++++start adhosts $(date) ++++++++"
-#---get hosts files content
-for hosts_url in ${hosts_urls[@]}; do
-  download_files $hosts_url $tmp_hosts_file
-done
+用法:
+  adhosts [--dry-run]
 
-#---get domains files content and modify
-for domains_url in ${domains_urls[@]}; do
-  tmp_file=$(mktemp)
-  download_files $domains_url $tmp_file
-  if [[ -s $tmp_file ]]; then
-    sed -i -E "/^[^#]/ s/^/127.0.0.1 /" $tmp_file
-    cat $tmp_file >>$tmp_hosts_file
+选项:
+  --dry-run    只显示合并结果，不修改系统 hosts
+  --help       显示帮助信息
+EOF
+  else
+    cat <<EOF
+adhosts - Automatically merge ad-blocking hosts and update your system hosts file
+
+Usage:
+  adhosts [--dry-run]
+
+Options:
+  --dry-run    Show result only, do not modify /etc/hosts
+  --help       Show this help message
+EOF
   fi
+  exit 0
+elif [[ "${1-}" == "--dry-run" ]]; then
+  DRY_RUN=true
+fi
+
+download() {
+  local url=$1
+  if command -v curl &>/dev/null; then
+    curl -fsSL "$url"
+  elif command -v wget &>/dev/null; then
+    wget -qO- "$url"
+  else
+    say "错误: 需要 curl 或 wget" "Error: curl or wget required"
+    exit 1
+  fi
+}
+
+SOURCES=(
+  "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-domains.txt"
+  "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+  "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/hosts.txt"
+)
+
+TMPFILE=$(mktemp)
+trap 'rm -f "$TMPFILE"' EXIT
+
+say "开始下载广告屏蔽 hosts 列表..." "Downloading ad-blocking hosts lists..."
+
+for url in "${SOURCES[@]}"; do
+  say "下载中: $url" "Fetching: $url"
+  download "$url" >> "$TMPFILE" || say "警告: 下载失败 $url" "Warning: Failed to download $url"
 done
 
-#delete old hosts lines
-if [[ ! -s $tmp_hosts_file ]]; then
-  echo "the new hosts file is empty, skip update. Exit!"
+say "下载完成，清理、去重中..." "Download complete, cleaning and deduplicating..."
+
+grep -E "^(0\.0\.0\.0|127\.0\.0\.1)[[:space:]]+[a-zA-Z0-9.-]+$" "$TMPFILE" |
+  sed 's/[[:space:]]\+/ /g' |
+  sort -u > "$TMPFILE.cleaned"
+
+LINE_COUNT=$(wc -l < "$TMPFILE.cleaned")
+say "已清理 $LINE_COUNT 条屏蔽记录" "Cleaned $LINE_COUNT blocking entries"
+
+if $DRY_RUN; then
+  say "--dry-run 模式，仅展示清理结果，不修改系统 hosts：" "--dry-run mode, showing cleaned entries only:"
+  cat "$TMPFILE.cleaned"
   exit 0
 fi
 
-#add tags
-sed -i -E \
-  -e "1 i $adhosts_start_tag" \
-  -e "$ a $adhosts_end_tag" \
-  $tmp_hosts_file
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+sudo cp /etc/hosts "/etc/hosts.bak.$TIMESTAMP"
+say "已备份原始 hosts 至 /etc/hosts.bak.$TIMESTAMP" "Backed up original hosts to /etc/hosts.bak.$TIMESTAMP"
 
-#remove old adhosts lines from $hosts_file
-sed -i -E \
-  -e "/$adhosts_start_tag/,/$adhosts_end_tag/d" \
-  $hosts_file
+say "合并并更新 /etc/hosts..." "Merging and updating /etc/hosts..."
+{
+  awk '/^# adhosts start/{exit} {print}' /etc/hosts
+  echo -e "\n# adhosts start ($(date))"
+  cat "$TMPFILE.cleaned"
+  echo "# adhosts end"
+} | sudo tee /etc/hosts > /dev/null
 
-#append new hosts lines to $hosts_file
-cat $tmp_hosts_file >>$hosts_file
-
-# copy the script file to /usr/local/bin at the first time
-
-echo -e "\e[1m Install adhosts , and update hosts.安装adhosts并更新hosts。\e[0m"
-install -m 755 -c $0 $target_path
-
-echo -e "OK!Some ads will be blocked!更新成功！部分广告将被屏蔽！"
-echo -e "Next time , execute this command \e[1madhosts\e[0m for updating.下次执行adhosts这条命令进行更新。"
+say "更新完成" "Update complete"
